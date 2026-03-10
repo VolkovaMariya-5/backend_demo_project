@@ -10,6 +10,13 @@ import {
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Request, Response } from 'express'; 
+import { Get } from '@nestjs/common';
+import { Authorization } from './decorators/authorization.decorator';
+import { Authorized } from './decorators/authorized.decorator';
+
 
 @Controller('auth')
 export class AuthController {
@@ -48,4 +55,19 @@ export class AuthController {
   logout(@Res({ passthrough: true }) res: any) {
     return this.authService.logout(res);
   }
+
+  // @UseGuards(AuthGuard('jwt'))
+ // @Get('me')
+ // @HttpCode(HttpStatus.OK)
+ // async me(@Req() req: any) {
+ //   return req.user;
+ // }
+
+ @Authorization()
+ @Get('me')
+ @HttpCode(HttpStatus.OK)
+ async me (@Authorized('id') id: number) {
+   return {id};
+ }  
+
 }

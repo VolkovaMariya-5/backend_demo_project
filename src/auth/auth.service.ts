@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  NotFoundException
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
@@ -52,7 +53,7 @@ export class AuthService {
     });
 
     const { accessToken, refreshToken } = this.generateTokens(
-      String(user.id),
+      Number(user.id),
     );
     this.setRefreshTokenCookie(res, refreshToken);
 
@@ -75,7 +76,7 @@ export class AuthService {
     }
 
     const { accessToken, refreshToken } = this.generateTokens(
-      String(user.id),
+      Number(user.id),
     );
     this.setRefreshTokenCookie(res, refreshToken);
 
@@ -102,7 +103,7 @@ export class AuthService {
     }
 
     const { accessToken, refreshToken } = this.generateTokens(
-      String(user.id),
+      Number(user.id),
     );
     this.setRefreshTokenCookie(res, refreshToken);
 
@@ -119,7 +120,20 @@ export class AuthService {
     return { message: 'Вы успешно вышли из системы' };
   }
 
-  private generateTokens(id: string) {
+
+  async validateUser(id: string) {
+   const user = await this.prisma.user.findUnique({
+     where: { id: Number(id) },
+     select: { id: true },
+   });
+   if (!user) {
+     throw new NotFoundException('Пользователь не найден');
+   }
+   return user;
+ }
+
+
+  private generateTokens(id: number) {
     const payload = { id };
 
     const accessToken = this.jwtService.sign(payload, {

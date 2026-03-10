@@ -1,58 +1,78 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Movie App Auth
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS backend с JWT-авторизацией, Prisma ORM, PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Установка и запуск
 
 ```bash
-$ npm install
+npm install
+npx prisma generate
+npx prisma migrate dev
+npm run start:dev
 ```
 
-## Compile and run the project
+## Переменные окружения
 
+Создайте файл `.env` на основе `.env.example`:
+
+```
+DATABASE_URL=postgresql://user:password@localhost:5432/movies?schema=public
+JWT_SECRET=your_jwt_secret
+JWT_ACCESS_TOKEN_TTL=3h
+JWT_REFRESH_TOKEN_TTL=7d
+COOKIE_DOMAIN=localhost
+```
+
+## API Endpoints
+
+### POST /auth/register
+Регистрация нового пользователя.
+```json
+{ "email": "user@mail.com", "name": "User", "password": "123456" }
+```
+
+### POST /auth/login
+Авторизация по email и паролю. Возвращает `accessToken`, устанавливает `refreshToken` в HttpOnly cookie.
+```json
+{ "email": "user@mail.com", "password": "123456" }
+```
+
+### POST /auth/refresh
+Обновление access token через refresh token из cookie.
+
+### POST /auth/logout
+Удаление refresh token cookie.
+
+### GET /auth/me (защищённый)
+Возвращает id текущего пользователя. Требует заголовок `Authorization: Bearer <accessToken>`.
+
+## Примеры запросов (curl)
+
+### Login success
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+curl -s -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@mail.com","password":"123456"}'
 ```
+Ответ: `{"accessToken":"<jwt_token>"}`
 
-## Run tests
-
+### Login fail (неверный пароль)
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+curl -s -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@mail.com","password":"wrong"}'
 ```
+Ответ: `{"message":"Неверный email или пароль","error":"Unauthorized","statusCode":401}`
+
+### Protected route success
+```bash
+curl -s http://localhost:3000/auth/me \
+  -H "Authorization: Bearer <accessToken>"
+```
+Ответ: `{"id":1}`
+
+### Protected route without token
+```bash
+curl -s http://localhost:3000/auth/me
+```
+Ответ: `{"statusCode":401,"message":"Unauthorized"}`

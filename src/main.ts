@@ -10,12 +10,11 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()
-    .setTitle('Task Management API')
-    .setDescription('API для работы с досками, задачами и пользователями')
+    .setTitle('Movie App Auth API')
+    .setDescription('API авторизации с JWT и HttpOnly cookies')
     .setVersion('1.0')
-    .addTag('Boards', 'Эндпоинты для работы с досками')
-    .addTag('Tasks', 'Эндпоинты для работы с задачами')
-    .addTag('Users', 'Эндпоинты для работы с пользователями')
+    .addBearerAuth()
+    .addTag('Auth', 'Эндпоинты авторизации')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

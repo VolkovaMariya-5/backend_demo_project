@@ -30,6 +30,7 @@ export class BoardsService {
 
   async remove(id: number) {
     await this.findOne(id);
+    await this.prisma.task.deleteMany({ where: { boardId: id } });
     return this.prisma.board.delete({ where: { id } });
   }
 }

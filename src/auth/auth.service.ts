@@ -116,14 +116,14 @@ export class AuthService {
   logout(res: Response) {
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      domain: this.COOKIE_DOMAIN,
-      secure: false,
-      sameSite: 'lax',
+      domain: this.isProduction ? undefined : this.COOKIE_DOMAIN,
+      secure: this.isProduction,
+      sameSite: this.isProduction ? 'none' : 'lax',
     });
     res.clearCookie('accessToken', {
-      domain: this.COOKIE_DOMAIN,
-      secure: false,
-      sameSite: 'lax',
+      domain: this.isProduction ? undefined : this.COOKIE_DOMAIN,
+      secure: this.isProduction,
+      sameSite: this.isProduction ? 'none' : 'lax',
     });
     return { message: 'Вы успешно вышли из системы' };
   }
@@ -165,15 +165,19 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  private get isProduction() {
+    return this.configService.get('NODE_ENV') === 'production';
+  }
+
   private setAccessTokenCookie(res: Response, token: string) {
     const expires = new Date();
     expires.setHours(expires.getHours() + 3);
 
     res.cookie('accessToken', token, {
       expires,
-      domain: this.COOKIE_DOMAIN,
-      secure: false,
-      sameSite: 'lax',
+      domain: this.isProduction ? undefined : this.COOKIE_DOMAIN,
+      secure: this.isProduction,
+      sameSite: this.isProduction ? 'none' : 'lax',
     });
   }
 
@@ -184,9 +188,9 @@ export class AuthService {
     res.cookie('refreshToken', token, {
       httpOnly: true,
       expires,
-      domain: this.COOKIE_DOMAIN,
-      secure: false,
-      sameSite: 'lax',
+      domain: this.isProduction ? undefined : this.COOKIE_DOMAIN,
+      secure: this.isProduction,
+      sameSite: this.isProduction ? 'none' : 'lax',
     });
   }
 }

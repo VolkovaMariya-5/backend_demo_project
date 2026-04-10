@@ -72,9 +72,9 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Получить данные текущего пользователя' })
-  @ApiResponse({ status: 200, description: 'Возвращает id пользователя' })
+  @ApiResponse({ status: 200, description: 'Возвращает данные пользователя (id, name, email, role)' })
   @ApiResponse({ status: 401, description: 'Токен отсутствует или невалиден' })
   async me(@Authorized('id') id: number) {
-    return { id };
+    return this.authService.getMe(id);
   }
 }

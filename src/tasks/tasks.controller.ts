@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Patch, ParseIntPipe, Query 
 import { ApiTags, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto, TaskStatus } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 import { Authorized } from 'src/auth/decorators/authorized.decorator';
 
 @ApiBearerAuth()
@@ -32,7 +33,7 @@ export class TasksController {
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateTaskDto: CreateTaskDto,
+    @Body() updateTaskDto: UpdateTaskDto,
     @Authorized('id') userId: number,
     @Authorized('role') userRole: string,
   ) {

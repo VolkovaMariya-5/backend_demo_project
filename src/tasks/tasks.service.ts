@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTaskDto, TaskStatus } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 import { Role } from 'src/auth/enums/role.enum';
 
 @Injectable()
@@ -30,7 +31,7 @@ export class TasksService {
     return task;
   }
 
-  async update(id: number, updateTaskDto: CreateTaskDto, userId: number, userRole: string) {
+  async update(id: number, updateTaskDto: UpdateTaskDto, userId: number, userRole: string) {
     const task = await this.findOne(id);
     this.checkOwnership(task.userId, userId, userRole);
     return this.prisma.task.update({

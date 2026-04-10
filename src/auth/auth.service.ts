@@ -56,6 +56,7 @@ export class AuthService {
       Number(user.id),
     );
     this.setRefreshTokenCookie(res, refreshToken);
+    this.setAccessTokenCookie(res, accessToken);
 
     return { accessToken };
   }
@@ -79,6 +80,7 @@ export class AuthService {
       Number(user.id),
     );
     this.setRefreshTokenCookie(res, refreshToken);
+    this.setAccessTokenCookie(res, accessToken);
 
     return { accessToken };
   }
@@ -106,6 +108,7 @@ export class AuthService {
       Number(user.id),
     );
     this.setRefreshTokenCookie(res, refreshToken);
+    this.setAccessTokenCookie(res, accessToken);
 
     return { accessToken };
   }
@@ -114,12 +117,28 @@ export class AuthService {
     res.clearCookie('refreshToken', {
       httpOnly: true,
       domain: this.COOKIE_DOMAIN,
-      secure: true,
-      sameSite: 'none',
+      secure: false,
+      sameSite: 'lax',
+    });
+    res.clearCookie('accessToken', {
+      domain: this.COOKIE_DOMAIN,
+      secure: false,
+      sameSite: 'lax',
     });
     return { message: 'Вы успешно вышли из системы' };
   }
 
+
+  async getMe(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, name: true, email: true, role: true },
+    });
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+    return user;
+  }
 
   async validateUser(id: string) {
    const user = await this.prisma.user.findUnique({
@@ -146,6 +165,18 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  private setAccessTokenCookie(res: Response, token: string) {
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 3);
+
+    res.cookie('accessToken', token, {
+      expires,
+      domain: this.COOKIE_DOMAIN,
+      secure: false,
+      sameSite: 'lax',
+    });
+  }
+
   private setRefreshTokenCookie(res: Response, token: string) {
     const expires = new Date();
     expires.setDate(expires.getDate() + 7);
@@ -154,8 +185,8 @@ export class AuthService {
       httpOnly: true,
       expires,
       domain: this.COOKIE_DOMAIN,
-      secure: true,
-      sameSite: 'none',
+      secure: false,
+      sameSite: 'lax',
     });
   }
 }

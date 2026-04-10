@@ -8,7 +8,7 @@
   "scripts": {
     "build": "npx prisma generate && npx nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "node -e \"console.log('ENV_CHECK:', Object.keys(process.env).filter(k => k.startsWith('JWT') || k.startsWith('DATABASE') || k.startsWith('COOKIE')))\" && node dist/main",
+    "start": "node dist/main",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",

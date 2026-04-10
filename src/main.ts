@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -9,8 +10,11 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+  console.log('CORS origin:', frontendUrl);
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+    origin: [frontendUrl, 'http://localhost:3001'],
     credentials: true,
   });
 
